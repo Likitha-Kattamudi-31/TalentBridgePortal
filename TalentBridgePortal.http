@@ -1,0 +1,6 @@
+@TalentBridgePortal_HostAddress = http://localhost:5062
+
+GET {{TalentBridgePortal_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
