@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using TalentBridgePortal.DTOs;
+using TalentBridgePortal.Models;
 using TalentBridgePortal.Services;
 
 namespace TalentBridgePortal.Controllers
@@ -25,12 +26,20 @@ namespace TalentBridgePortal.Controllers
         [HttpPost("signin")]
         public async Task<IActionResult> Signin(LoginDto dto)
         {
-            var token = await _service.Login(dto);
+            JobSeeker token = await _service.Login(dto);
 
             if (token == null)
                 return Unauthorized("Invalid credentials");
 
-            return Ok(new { token });
+            var response = new JobSeeker
+            {
+                FirstName = token.FirstName,
+                LastName = token.LastName,
+                Email = token.Email,
+                ResumeContent = token.ResumeContent
+            };
+
+            return Ok(response);
         }
     }
 }

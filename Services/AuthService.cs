@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using TalentBridgePortal.Data;
 using TalentBridgePortal.DTOs;
 using TalentBridgePortal.Models;
@@ -19,20 +20,12 @@ namespace TalentBridgePortal.Services
             if (await _context.JobSeekers.AnyAsync(x => x.Email == dto.Email))
                 return "User exists";
 
-            // Create Resume Folder
-            var folderPath = Path.Combine(Directory.GetCurrentDirectory(), "Resumes");
+            byte[] resumeData;
 
-            if (!Directory.Exists(folderPath))
-                Directory.CreateDirectory(folderPath);
-
-            // Generate Unique File Name
-            var fileName = Guid.NewGuid() + Path.GetExtension(dto.Resume.FileName);
-            var filePath = Path.Combine(folderPath, fileName);
-
-            // Save Resume File
-            using (var stream = new FileStream(filePath, FileMode.Create))
+            using (var ms = new MemoryStream())
             {
-                await dto.Resume.CopyToAsync(stream);
+                await dto.Resume.CopyToAsync(ms);
+                resumeData = ms.ToArray();
             }
 
             var user = new JobSeeker
@@ -42,7 +35,7 @@ namespace TalentBridgePortal.Services
                 LastName = dto.LastName,
                 Email = dto.Email,
                 Password = dto.Password, // demo only
-                ResumePath = filePath        // 👈 store file path
+                ResumeContent = resumeData
             };
 
             _context.JobSeekers.Add(user);
@@ -51,7 +44,7 @@ namespace TalentBridgePortal.Services
             return "Registered Successfully";
         }
 
-        public async Task<bool?> Login(LoginDto dto)
+        public async Task<JobSeeker?> Login(LoginDto dto)
         {
             var user = await _context.JobSeekers
                 .FirstOrDefaultAsync(x => x.Email == dto.Email);
@@ -62,7 +55,7 @@ namespace TalentBridgePortal.Services
             if (dto.Password ==null)
                 return null;
 
-            return true;
+            return user;
         }
     }
 }
