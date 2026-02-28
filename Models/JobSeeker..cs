@@ -15,5 +15,6 @@ namespace TalentBridgePortal.Models
 
         public string Password { get; set; }
         public byte[]? ResumeContent { get; set; }
+        public string ResumeName {  get; set; }
     }
 }

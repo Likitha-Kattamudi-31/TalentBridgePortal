@@ -18,28 +18,41 @@ namespace TalentBridgePortal.Controllers
         }
 
         [HttpPost("signup")]
-        public async Task<IActionResult> Signup([FromForm] RegisterDto dto)
+        public async Task<IActionResult> Register([FromForm] RegisterDto dto)
         {
-            return Ok(await _service.Register(dto));
+            try
+            {
+                var userId = await _service.Register(dto);
+                return Ok(new { Id = userId });
+            }
+            catch (InvalidOperationException ex)
+            {
+                return BadRequest(new { Message = ex.Message });
+            }
         }
 
         [HttpPost("signin")]
         public async Task<IActionResult> Signin(LoginDto dto)
         {
-            JobSeeker token = await _service.Login(dto);
+            JobSeekerDto response = await _service.Login(dto);
 
-            if (token == null)
-                return Unauthorized("Invalid credentials");
-
-            var response = new JobSeeker
-            {
-                FirstName = token.FirstName,
-                LastName = token.LastName,
-                Email = token.Email,
-                ResumeContent = token.ResumeContent
-            };
+            if (response == null)
+                return Unauthorized("Invalid credentials");            
 
             return Ok(response);
         }
+
+
+        [HttpPost("update-resume")]
+        public async Task<IActionResult> UpdateResume([FromForm] UpdateResumeDto dto)
+        {
+            var result = await _service.UpdateResume(dto);
+
+            if (!result)
+                return BadRequest("Unable to update resume");
+
+            return Ok("Resume updated successfully");
+        }
+
     }
 }
