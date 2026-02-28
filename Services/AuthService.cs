@@ -34,7 +34,8 @@ namespace TalentBridgePortal.Services
                 LastName = dto.LastName,
                 Email = dto.Email,
                 Password = dto.Password, // demo only
-                ResumeContent = resumeData
+                ResumeContent = resumeData,
+                ResumeName = dto.Resume.FileName
             };
 
             _context.JobSeekers.Add(user);
@@ -43,18 +44,33 @@ namespace TalentBridgePortal.Services
             return user.Id; 
         }
 
-        public async Task<JobSeeker?> Login(LoginDto dto)
+        public async Task<JobSeekerDto?> Login(LoginDto dto)
         {
             var user = await _context.JobSeekers
                 .FirstOrDefaultAsync(x => x.Email == dto.Email);
 
-            if (user == null)
+            if (user == null || string.IsNullOrEmpty(dto.Password))
                 return null;
 
-            if (dto.Password ==null)
+            // Optional: verify password properly using hashing
+            if (user.Password != dto.Password)
                 return null;
 
-            return user;
+            // Convert resume bytes to Base64 to send via JSON
+            string resumeBase64 = user.ResumeContent != null
+                ? Convert.ToBase64String(user.ResumeContent)
+                : "";
+
+            return new JobSeekerDto
+            {
+                Id = user.Id,
+                FirstName = user.FirstName,
+                LastName = user.LastName,
+                Email = user.Email,
+                ResumeName = user.ResumeName ?? "",
+                ResumeBase64 = resumeBase64
+            };
         }
+    
     }
 }

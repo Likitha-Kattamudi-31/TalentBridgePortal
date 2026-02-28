@@ -1,31 +1,61 @@
-using JobPortal.API.Services;
 using Microsoft.EntityFrameworkCore;
-using OpenAI;
+
 using TalentBridgePortal.Data;
+
 using TalentBridgePortal.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add DbContext
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
-    options.UseSqlServer(
-        builder.Configuration.GetConnectionString("DefaultConnection")));
-builder.Services.AddScoped<AuthService>();
-// Add these lines
-builder.Services.AddHttpClient();
 
-// Register your service correctly
-builder.Services.AddScoped<IResumeParserService, ResumeParserService>();
+    options.UseSqlServer(
+
+        builder.Configuration.GetConnectionString("DefaultConnection")));
+
+// Services
+
+builder.Services.AddScoped<AuthService>();
+
 builder.Services.AddControllers();
+
 builder.Services.AddSwaggerGen();
+
+// ? ADD CORS
+
+builder.Services.AddCors(options =>
+
+{
+
+    options.AddPolicy("AllowFrontend",
+
+        policy =>
+
+        {
+
+            policy
+
+                .AllowAnyOrigin()
+
+                .AllowAnyHeader()
+
+                .AllowAnyMethod();
+
+        });
+
+});
 
 var app = builder.Build();
 
 app.UseSwagger();
+
 app.UseSwaggerUI();
+
+// ? USE CORS BEFORE AUTH
+
+app.UseCors("AllowFrontend");
+
 app.UseAuthorization();
 
 app.MapControllers();
-
 
 app.Run();
