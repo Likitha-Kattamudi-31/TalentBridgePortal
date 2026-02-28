@@ -27,10 +27,10 @@ namespace JobPortal.API.Services
             _model = configuration["Groq:Model"] ?? "llama-3.3-70b-versatile";
         }
 
-        public async Task<ResumeEvaluationDto> EvaluateResumeFromDbAsync(string jobSeekerId)
+        public async Task<ResumeEvaluationDto> EvaluateResumeFromDbAsync(string email)
         {
             var jobSeeker = await _dbContext.JobSeekers
-                                .FirstOrDefaultAsync(j => j.Email == jobSeekerId);
+                                .FirstOrDefaultAsync(j => j.Email == email);
 
             if (jobSeeker == null || jobSeeker.ResumeContent == null)
                 throw new Exception("Resume not found.");
@@ -50,27 +50,37 @@ namespace JobPortal.API.Services
                 throw new Exception("Could not extract text from resume.");
 
             string prompt = $@"
-Evaluate this resume for general job market suitability.
-You MUST respond in EXACTLY this format with no extra text before it:
+            Evaluate this resume for general job market suitability.
+            You MUST respond in EXACTLY this format with no extra text before it:
 
-PROBABILITY: 75
-REASONING: First line of reasoning. Second line of reasoning.
-SUMMARY: First line of summary. Second line of summary.
-IMPROVEMENTS: List the top 3 most important things to improve, each on a new line starting with '- '.
-MARKET_COMPARISON: Compare this resume against current market standards and list what is missing or below standard, each on a new line starting with '* '.
+            PROBABILITY: <whole number between 0 and 100>
+            REASONING: First line of reasoning.
+            Second line of reasoning.
+            SUMMARY: First line of summary.
+            Second line of summary.
+            IMPROVEMENTS:
+            - First improvement
+            - Second improvement
+            - Third improvement
+            MARKET_COMPARISON:
+            * First comparison point
+            * Second comparison point
+            * Third comparison point
+            * Fourth comparison point
 
-Rules:
-- PROBABILITY must be a whole number between 0 and 100
-- Do not write 75% just write 75
-- REASONING must be exactly 2 lines only, focused on overall suitability
-- SUMMARY must be exactly 2 lines focusing on candidate's key strengths
-- IMPROVEMENTS must be the most critical and focused points only, maximum 3 points
-- MARKET_COMPARISON must compare against current industry standards, maximum 4 points
-- Keep everything concise and to the point
+            Rules:
+            - PROBABILITY must be a calculated whole number between 0 and 100
+            - Do NOT use placeholders like < >
+            - Do NOT write 75% — write only the number
+            - REASONING must be exactly 2 lines only
+            - SUMMARY must be exactly 2 lines only
+            - IMPROVEMENTS maximum 3 points
+            - MARKET_COMPARISON maximum 4 points
+            - Keep everything concise and professional
 
-Resume:
-{resumeText}
-";
+            Resume:
+            {resumeText}
+            ";
 
 
             var requestBody = new

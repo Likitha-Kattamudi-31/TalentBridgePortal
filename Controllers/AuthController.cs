@@ -42,5 +42,17 @@ namespace TalentBridgePortal.Controllers
             return Ok(response);
         }
 
+
+        [HttpPost("update-resume")]
+        public async Task<IActionResult> UpdateResume([FromForm] UpdateResumeDto dto)
+        {
+            var result = await _service.UpdateResume(dto);
+
+            if (!result)
+                return BadRequest("Unable to update resume");
+
+            return Ok("Resume updated successfully");
+        }
+
     }
 }
