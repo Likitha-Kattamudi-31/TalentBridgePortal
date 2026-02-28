@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using System.Collections.Generic;
 using TalentBridgePortal.Models;
+using TalentBridgePortal.Models.JobPortal.API.Models;
 
 namespace TalentBridgePortal.Data
 {
@@ -9,5 +10,6 @@ namespace TalentBridgePortal.Data
         public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)  : base(options) { }
 
         public DbSet<JobSeeker> JobSeekers { get; set; }
+        public DbSet<ResumeEvaluation> ResumeEvaluations { get; set; }
     }
 }

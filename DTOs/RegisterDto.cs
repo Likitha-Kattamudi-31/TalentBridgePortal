@@ -18,7 +18,6 @@ namespace TalentBridgePortal.DTOs
         [Required]
         public string Password { get; set; }
 
-        // 👇 Resume Upload
         [Required]
         public IFormFile Resume { get; set; }
     }
